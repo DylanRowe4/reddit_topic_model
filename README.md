@@ -1,2 +1,2 @@
-# reddit_topic_model
-Code to create a Reddit scraper and topic model using BERTopic and parameter fine-tuning.
+# Subreddit Topic Modeler
+Code to create a Reddit scraper and topic model using BERTopic and parameter fine-tuning. The code allows users with valid Reddit API credentials to extract the latest posts and comments from any subreddit and create a fine-tuned topic model of the posts from it using BERTopic and Optuna. The model uses a custom metric to maximize the within topic similarity and minimize the between topic similarity for parameter tuning of the model. Feel free to try it out with your own credentials and compare subreddits and different timeframes (top this week to top this month, etc).
