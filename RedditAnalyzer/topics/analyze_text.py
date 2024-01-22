@@ -17,7 +17,7 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 class CreateTopicModel:
     def __init__(self, df, column_name, use_hdbscan=True):
-        self.study_df = df.copy()
+        self.study_df = df.loc[df[column_name].apply(len) <= 1000].reset_index(drop=True).copy()
         self.column_name = column_name
         self.use_hdbscan = use_hdbscan
         
@@ -194,7 +194,16 @@ class CreateTopicModel:
 
         #assign topics to dataframe
         self.study_df['topic'] = topics
-        return self.study_df, model
+        self.study_df['embedding'] = [embed for embed in embeds]
+        
+        #groupby topic and create a list of all posts
+        grouped_topics = self.study_df.groupby('topic', as_index=False).agg({'text': list, 'embedding': list})
+        
+        #get keywords for each topic
+        grouped_topics['key_words'] = [
+            [word[0] for word in model.get_topic(i)][:6] for i in range(len(model.generate_topic_labels()))
+        ]
+        return self.study_df, grouped_topics, model
     
     def find_hyperparams(self, num_trials):
         
@@ -213,5 +222,5 @@ class CreateTopicModel:
         clear_output()
         
         #fit bertopic model using hyperparameters
-        optimal_df, optimal_model = self.fit_model(study.best_params.copy(), self.embeddings)
-        return optimal_df, optimal_model
+        optimal_df, grouped_topics, optimal_model = self.fit_model(study.best_params.copy(), self.embeddings)
+        return optimal_df, grouped_topics, optimal_model
